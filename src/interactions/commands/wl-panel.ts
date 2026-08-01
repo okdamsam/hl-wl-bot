@@ -51,7 +51,7 @@ export async function handleWlPanel(interaction: ChatInputCommandInteraction): P
       'When you are ready, click **Apply** below.',
     )
     .setColor(0x5865f2)
-    .setFooter({ text: 'Written and maintained by Ok Sam, inspired by Kodey' });
+    .setFooter({ text: 'Written and maintained by Ok Sam, inspired by Kayla' });
 
   const button = new ButtonBuilder()
     .setCustomId(CUSTOM_IDS.APPLY_BUTTON)
