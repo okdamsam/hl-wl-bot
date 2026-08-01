@@ -1,0 +1,26 @@
+{
+  "name": "hl-wl-bot",
+  "version": "0.1.0",
+  "description": "Discord whitelist application bot",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && node scripts/copy-migrations.js",
+    "start": "node dist/index.js",
+    "register": "tsx src/register.ts",
+    "migrate": "tsx src/db/migrate.ts",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
