@@ -42,7 +42,7 @@ function buildQuestionsEmbed(): EmbedBuilder {
       {
         name: 'Question 2 — In character',
         value:
-          "Mid-shift, your character is approached by someone offering 15,000 spesos in cash for the SCAF hardsuit they're wearing. The offer is serious and the buyer is in a hurry.\n\n" +
+          "Mid-shift, your character is approached by someone offering 15,000 spesos in cash for the SCAF hardsuit your character is wearing. The offer is serious and the buyer is in a hurry.\n\n" +
           'Write your character\'s response **exactly as you would type it in game.** Use emotes, and make it clear whether you\'re speaking aloud, using the radio, or whispering.\n\n' +
           "We're reading for how you write in character — not for whether you take the deal.",
       },

@@ -50,7 +50,8 @@ export async function handleWlPanel(interaction: ChatInputCommandInteraction): P
       '• A screenshot of your in-game playtime (not Steam hours)\n\n' +
       'When you are ready, click **Apply** below.',
     )
-    .setColor(0x5865f2);
+    .setColor(0x5865f2)
+    .setFooter({ text: 'Written and maintained by Ok Sam, inspired by Kodey' });
 
   const button = new ButtonBuilder()
     .setCustomId(CUSTOM_IDS.APPLY_BUTTON)
