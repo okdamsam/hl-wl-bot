@@ -55,3 +55,6 @@ export function runMigrations(): void {
     logger.info(`Applied: ${file}`);
   }
 }
+
+// Run migrations immediately so tables exist before queries.ts prepares statements.
+runMigrations();
