@@ -52,7 +52,7 @@ function buildApplyModal(): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('SS14 in-game username')
-        .setDescription('Your exact ckey / character name as it appears in-game.')
+        .setDescription('Your exact ckey / character name as it appears in-game. \u26a0\ufe0f Four questions follow in your thread.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(CUSTOM_IDS.FIELD_USERNAME)
@@ -98,8 +98,7 @@ function buildApplyModal(): ModalBuilder {
       new LabelBuilder()
         .setLabel('Screenshot of your playtime')
         .setDescription(
-          'Open the character menu → playtime tab. Must be legible. Not Steam hours — use the in-game tracker.\n\n' +
-          '⚠️ After submitting, four in-depth questions will be posted in your private thread. You must answer all of them before staff will review your application.',
+          'Open the character menu \u2192 playtime tab. Must be legible. Not Steam hours \u2014 use the in-game tracker.',
         )
         .setFileUploadComponent(
           new FileUploadBuilder()
