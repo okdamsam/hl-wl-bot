@@ -83,9 +83,19 @@ export async function handleDecideModal(interaction: ModalSubmitInteraction): Pr
     logger.warn(`Could not DM applicant ${applicantId} for app ${applicationId} — DMs may be closed`, err);
   }
 
-  // Archive and lock — never delete
+  // Log decision in thread
   const thread = interaction.channel;
   if (thread?.isThread()) {
+    const outcomeLabel = outcome === 'deny-req' ? 'Requirements not met' : 'Expectations not met';
+    const logLines = [
+      `**Denied** by <@${interaction.user.id}> — ${outcomeLabel}`,
+    ];
+    if (note) logLines.push(`**Message sent to applicant:** ${note}`);
+    await thread.send(logLines.join('\n')).catch((e: unknown) =>
+      logger.error(`Failed to post denial log for app ${applicationId}`, e)
+    );
+
+    // Archive and lock — never delete
     const base = thread.name.match(/wl-.*/)?.[0] ?? thread.name;
     await thread.setName(`denied-${base}`.slice(0, 100)).catch((e: unknown) =>
       logger.error(`Failed to rename thread ${thread.id}`, e)

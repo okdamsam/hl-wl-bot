@@ -129,11 +129,11 @@ export async function handleDecide(interaction: ButtonInteraction): Promise<void
       new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
           .setCustomId('note')
-          .setLabel('Optional note for the applicant')
+          .setLabel('Denial reason — sent to applicant via DM')
           .setStyle(TextInputStyle.Paragraph)
           .setRequired(false)
           .setMaxLength(1000)
-          .setPlaceholder('Leave blank to send no note. Kept on record regardless.')
+          .setPlaceholder('This message will be DM’d to the applicant. Leave blank to send no message.')
       )
     );
 
