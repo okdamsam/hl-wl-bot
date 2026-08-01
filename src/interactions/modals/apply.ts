@@ -6,7 +6,6 @@ import {
   type ModalSubmitInteraction,
   type TextChannel,
 } from 'discord.js';
-import { EmbedBuilder } from 'discord.js';
 import { CUSTOM_IDS } from '../../lib/customId.js';
 import {
   deleteApplication,

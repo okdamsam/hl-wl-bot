@@ -64,9 +64,11 @@ export async function handleDecide(interaction: ButtonInteraction): Promise<void
         await member.roles.add(whitelistRoleId);
       } catch (err) {
         logger.error(`Failed to grant whitelist role to ${applicantId} for app ${applicationId}`, err);
-        await interaction.channel?.send(
-          `⚠️ **Action required:** Could not grant the whitelist role to <@${applicantId}> automatically. Please grant it manually.`
-        );
+        if (interaction.channel?.isThread()) {
+          await interaction.channel.send(
+            `⚠️ **Action required:** Could not grant the whitelist role to <@${applicantId}> automatically. Please grant it manually.`
+          );
+        }
       }
     }
 
