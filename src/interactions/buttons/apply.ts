@@ -65,22 +65,6 @@ function buildApplyModal(): ModalBuilder {
             .setPlaceholder('e.g. John Smith'),
         ),
       new LabelBuilder()
-        .setLabel('Before you submit — please confirm')
-        .setCheckboxGroupComponent(
-          new CheckboxGroupBuilder()
-            .setCustomId(CUSTOM_IDS.FIELD_ACKNOWLEDGEMENTS)
-            .setMinValues(2)
-            .setMaxValues(2)
-            .addOptions(
-              new CheckboxGroupOptionBuilder()
-                .setLabel('I will upload evidence of my playtime (server playtime, not Steam app runtime)')
-                .setValue('evidence'),
-              new CheckboxGroupOptionBuilder()
-                .setLabel('I understand there are four questions to answer following this form')
-                .setValue('questions'),
-            ),
-        ),
-      new LabelBuilder()
         .setLabel('Are you currently banned anywhere?')
         .setDescription('SS13 or SS14. If yes, name the server and why. Hiding a ban is worse than the ban.')
         .setTextInputComponent(
@@ -106,7 +90,7 @@ function buildApplyModal(): ModalBuilder {
       new LabelBuilder()
         .setLabel('Screenshot of your playtime')
         .setDescription(
-          'Open the character menu \u2192 playtime tab. Must be legible. Not Steam hours \u2014 use the in-game tracker.',
+          'Open the character menu → playtime tab. Must be legible. Not Steam hours — use the in-game tracker.',
         )
         .setFileUploadComponent(
           new FileUploadBuilder()
@@ -114,6 +98,22 @@ function buildApplyModal(): ModalBuilder {
             .setMinValues(1)
             .setMaxValues(3)
             .setRequired(true),
+        ),
+      new LabelBuilder()
+        .setLabel('Before you submit — please confirm')
+        .setCheckboxGroupComponent(
+          new CheckboxGroupBuilder()
+            .setCustomId(CUSTOM_IDS.FIELD_ACKNOWLEDGEMENTS)
+            .setMinValues(2)
+            .setMaxValues(2)
+            .addOptions(
+              new CheckboxGroupOptionBuilder()
+                .setLabel('I will upload evidence of my playtime (server playtime, not Steam app runtime)')
+                .setValue('evidence'),
+              new CheckboxGroupOptionBuilder()
+                .setLabel('I understand there are four questions to answer following this form')
+                .setValue('questions'),
+            ),
         ),
     );
 }
