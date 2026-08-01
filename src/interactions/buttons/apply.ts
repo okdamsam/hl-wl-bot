@@ -1,11 +1,13 @@
 import {
+  CheckboxGroupBuilder,
+  CheckboxGroupOptionBuilder,
+  FileUploadBuilder,
   GuildMember,
+  LabelBuilder,
+  MessageFlags,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  FileUploadBuilder,
-  LabelBuilder,
-  MessageFlags,
   type ButtonInteraction,
 } from 'discord.js';
 import { CUSTOM_IDS } from '../../lib/customId.js';
@@ -52,7 +54,7 @@ function buildApplyModal(): ModalBuilder {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('SS14 in-game username')
-        .setDescription('Your exact ckey / character name as it appears in-game. \u26a0\ufe0f Four questions follow in your thread.')
+        .setDescription('Your exact ckey / character name as it appears in-game.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(CUSTOM_IDS.FIELD_USERNAME)
@@ -63,14 +65,20 @@ function buildApplyModal(): ModalBuilder {
             .setPlaceholder('e.g. John Smith'),
         ),
       new LabelBuilder()
-        .setLabel('SS14 playtime and servers')
-        .setDescription('Total hours, and which servers you played them on.')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId(CUSTOM_IDS.FIELD_PLAYTIME)
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(true)
-            .setPlaceholder("340 hrs — 200 Wizard's Den, 140 Goob"),
+        .setLabel('Before you submit — please confirm')
+        .setCheckboxGroupComponent(
+          new CheckboxGroupBuilder()
+            .setCustomId(CUSTOM_IDS.FIELD_ACKNOWLEDGEMENTS)
+            .setMinValues(2)
+            .setMaxValues(2)
+            .addOptions(
+              new CheckboxGroupOptionBuilder()
+                .setLabel('I will upload evidence of my playtime (server playtime, not Steam app runtime)')
+                .setValue('evidence'),
+              new CheckboxGroupOptionBuilder()
+                .setLabel('I understand there are four questions to answer following this form')
+                .setValue('questions'),
+            ),
         ),
       new LabelBuilder()
         .setLabel('Are you currently banned anywhere?')

@@ -78,14 +78,16 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
 
   // ── Extract fields ──────────────────────────────────────────────────────────
   const username = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_USERNAME);
-  const playtime = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_PLAYTIME);
   const banned = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_BANNED);
   const age = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_AGE);
+
+  // Acknowledgement checkboxes — both required (enforced by minValues=2); read to confirm.
+  interaction.fields.getCheckboxGroup(CUSTOM_IDS.FIELD_ACKNOWLEDGEMENTS);
 
   const uploadedFiles = interaction.fields.getUploadedFiles(CUSTOM_IDS.FIELD_SCREENSHOTS);
 
   // ── Insert application row ──────────────────────────────────────────
-  const answers = JSON.stringify({ username, playtime, banned, age });
+  const answers = JSON.stringify({ username, banned, age });
   const applicationId = insertApplication(interaction.user.id, answers);
 
   // ── Resolve applications channel ────────────────────────────────────────────
@@ -139,7 +141,6 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
     })
     .addFields(
       { name: 'SS14 username', value: username, inline: true },
-      { name: 'SS14 playtime and servers', value: truncate(playtime) },
       { name: 'Currently banned anywhere?', value: truncate(banned) },
       { name: 'Age', value: age, inline: true },
       { name: 'Applicant', value: `<@${interaction.user.id}>`, inline: true },
@@ -240,7 +241,6 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
     )
     .addFields(
       { name: 'SS14 username', value: username, inline: true },
-      { name: 'SS14 playtime and servers', value: truncate(playtime, 512) },
       { name: 'Currently banned anywhere?', value: truncate(banned, 512) },
     )
     .setColor(0x57f287)

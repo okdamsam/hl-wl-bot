@@ -10,11 +10,10 @@ export const CUSTOM_IDS = {
 
   // Modal field component IDs (used with interaction.fields.getXxx())
   FIELD_USERNAME: 'username',
-  FIELD_PLAYTIME: 'playtime',
+  FIELD_ACKNOWLEDGEMENTS: 'ack',
   FIELD_BANNED: 'banned',
   FIELD_AGE: 'age',
   FIELD_SCREENSHOTS: 'screenshots',
-  FIELD_RULES: 'rules',
 } as const;
 
 /**
