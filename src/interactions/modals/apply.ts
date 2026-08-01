@@ -76,6 +76,7 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
   }
 
   // ── Extract fields ──────────────────────────────────────────────────────────
+  const username = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_USERNAME);
   const playtime = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_PLAYTIME);
   const banned = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_BANNED);
   const age = interaction.fields.getTextInputValue(CUSTOM_IDS.FIELD_AGE);
@@ -83,7 +84,7 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
   const uploadedFiles = interaction.fields.getUploadedFiles(CUSTOM_IDS.FIELD_SCREENSHOTS);
 
   // ── Insert application row ──────────────────────────────────────────
-  const answers = JSON.stringify({ playtime, banned, age });
+  const answers = JSON.stringify({ username, playtime, banned, age });
   const applicationId = insertApplication(interaction.user.id, answers);
 
   // ── Resolve applications channel ────────────────────────────────────────────
@@ -136,6 +137,7 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
       iconURL: interaction.user.displayAvatarURL(),
     })
     .addFields(
+      { name: 'SS14 username', value: username, inline: true },
       { name: 'SS14 playtime and servers', value: truncate(playtime) },
       { name: 'Currently banned anywhere?', value: truncate(banned) },
       { name: 'Age', value: age, inline: true },
@@ -221,6 +223,7 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
       `Your thread: ${thread.toString()}\n\nAnswer the four questions posted there to complete your application. A staff member will pick it up once you have.`,
     )
     .addFields(
+      { name: 'SS14 username', value: username, inline: true },
       { name: 'SS14 playtime and servers', value: truncate(playtime, 512) },
       { name: 'Currently banned anywhere?', value: truncate(banned, 512) },
     )

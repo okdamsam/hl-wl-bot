@@ -9,6 +9,7 @@ export const CUSTOM_IDS = {
   APPLY_MODAL: 'wl:apply',
 
   // Modal field component IDs (used with interaction.fields.getXxx())
+  FIELD_USERNAME: 'username',
   FIELD_PLAYTIME: 'playtime',
   FIELD_BANNED: 'banned',
   FIELD_AGE: 'age',

@@ -51,6 +51,18 @@ function buildApplyModal(): ModalBuilder {
     .setTitle('HardLight Whitelist Application')
     .addLabelComponents(
       new LabelBuilder()
+        .setLabel('SS14 in-game username')
+        .setDescription('Your exact ckey / character name as it appears in-game.')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId(CUSTOM_IDS.FIELD_USERNAME)
+            .setStyle(TextInputStyle.Short)
+            .setMinLength(1)
+            .setMaxLength(64)
+            .setRequired(true)
+            .setPlaceholder('e.g. John Smith'),
+        ),
+      new LabelBuilder()
         .setLabel('SS14 playtime and servers')
         .setDescription('Total hours, and which servers you played them on.')
         .setTextInputComponent(
