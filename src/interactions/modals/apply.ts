@@ -21,13 +21,14 @@ function truncate(text: string, max = 1024): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
 }
 
-function buildQuestionsEmbed(): EmbedBuilder {
+function buildQuestionsEmbed(userId: string): EmbedBuilder {
   return new EmbedBuilder()
     .setTitle('Thanks for applying.')
     .setDescription(
-      'Answer the four questions below in this thread — one message per question is fine, or one long post, whichever you prefer.\n\n' +
+      `<@${userId}> — your application has been received.\n\n` +
+      '**Answer the four questions below in this thread.** One message per question is fine, or one long post, whichever you prefer.\n\n' +
       "Take your time. There's no clock on this, and we'd rather wait a day for a considered answer than get one in ten minutes. " +
-      'A staff member will pick this up once you have answered all four.',
+      'A staff member will pick this up once you have answered all four. **Your application will not be reviewed until all four are answered.**',
     )
     .addFields(
       {
@@ -154,6 +155,8 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
   // ── Re-upload screenshots (CDN URLs expire ~24 h) ───────────────────────────
   if (uploadedFiles && uploadedFiles.size > 0) {
     const attachments: AttachmentBuilder[] = [];
+    let screenshotFailed = false;
+
     for (const file of uploadedFiles.values()) {
       try {
         const response = await fetch(file.url);
@@ -162,17 +165,30 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
         attachments.push(new AttachmentBuilder(buffer, { name: file.name }));
       } catch (err) {
         logger.error(`Failed to re-upload attachment "${file.name}" for app ${applicationId}`, err);
+        screenshotFailed = true;
       }
     }
+
     if (attachments.length > 0) {
-      await thread.send({ content: '**Screenshots:**', files: attachments }).catch((err: unknown) => {
+      try {
+        await thread.send({ content: '**Screenshots:**', files: attachments });
+      } catch (err) {
         logger.error(`Failed to send screenshots to thread ${thread.id} (app ${applicationId})`, err);
+        screenshotFailed = true;
+      }
+    }
+
+    if (screenshotFailed || attachments.length === 0) {
+      await thread.send(
+        `<@${interaction.user.id}> ⚠️ One or more of your screenshots could not be uploaded by the bot. Please post them directly in this thread so staff can see them.`,
+      ).catch((err: unknown) => {
+        logger.error(`Failed to send screenshot failure notice for app ${applicationId}`, err);
       });
     }
   }
 
   // ── Post opening questions ──────────────────────────────────────────────────
-  await thread.send({ embeds: [buildQuestionsEmbed()] }).catch((err: unknown) => {
+  await thread.send({ content: `<@${interaction.user.id}>`, embeds: [buildQuestionsEmbed(interaction.user.id)] }).catch((err: unknown) => {
     logger.error(`Failed to post thread questions for app ${applicationId}`, err);
   });
 

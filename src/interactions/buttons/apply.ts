@@ -98,7 +98,8 @@ function buildApplyModal(): ModalBuilder {
       new LabelBuilder()
         .setLabel('Screenshot of your playtime')
         .setDescription(
-          'Open the character menu → playtime tab. Must be legible. Not Steam hours — use the in-game tracker.',
+          'Open the character menu → playtime tab. Must be legible. Not Steam hours — use the in-game tracker.\n\n' +
+          '⚠️ After submitting, four in-depth questions will be posted in your private thread. You must answer all of them before staff will review your application.',
         )
         .setFileUploadComponent(
           new FileUploadBuilder()
