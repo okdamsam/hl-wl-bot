@@ -167,6 +167,25 @@ export function getPendingApplications(): PendingApplicationRow[] {
   return stmtGetPendingApplications.all() as PendingApplicationRow[];
 }
 
+// ── Application history ───────────────────────────────────────────────────────
+
+export interface ApplicationHistoryRow {
+  id: number;
+  status: string;
+  created_at: number;
+}
+
+const stmtGetApplicationHistory = db.prepare<[string, number], ApplicationHistoryRow>(
+  `SELECT id, status, created_at FROM applications
+   WHERE applicant_id = ? AND id != ?
+   ORDER BY created_at DESC`
+);
+
+/** Returns all previous applications for an applicant, excluding the given application ID. */
+export function getApplicationHistory(applicantId: string, excludeId: number): ApplicationHistoryRow[] {
+  return stmtGetApplicationHistory.all(applicantId, excludeId) as ApplicationHistoryRow[];
+}
+
 // ── Stats ────────────────────────────────────────────────────────────────────
 
 export interface StaffDecisionRow {

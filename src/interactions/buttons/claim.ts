@@ -4,7 +4,7 @@ import {
   type ButtonInteraction,
 } from 'discord.js';
 import { decode } from '../../lib/customId.js';
-import { claimApplication, getConfig } from '../../db/queries.js';
+import { claimApplication, getApplicationHistory, getConfig } from '../../db/queries.js';
 import { buildClaimedPanel } from '../../services/applications.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
 import { logger } from '../../lib/logger.js';
@@ -44,6 +44,18 @@ export async function handleClaim(interaction: ButtonInteraction): Promise<void>
 
   logger.info(`Application ${applicationId} claimed by ${interaction.user.id}`);
   await interaction.editReply(buildClaimedPanel(applicationId, applicantId, interaction.user.id));
+
+  // Ephemeral history summary for the claiming staff member
+  const history = getApplicationHistory(applicantId, applicationId);
+  if (history.length > 0) {
+    const lines = history.map(
+      (r) => `\u2022 #${r.id} \u2014 \`${r.status}\` \u2014 <t:${r.created_at}:d>`,
+    );
+    await interaction.followUp({
+      content: `**Previous applications for <@${applicantId}>:**\n${lines.join('\n')}`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
 
   const thread = interaction.channel;
   if (thread?.isThread()) {
