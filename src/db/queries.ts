@@ -173,10 +173,11 @@ export interface ApplicationHistoryRow {
   id: number;
   status: string;
   created_at: number;
+  thread_id: string | null;
 }
 
 const stmtGetApplicationHistory = db.prepare<[string, number], ApplicationHistoryRow>(
-  `SELECT id, status, created_at FROM applications
+  `SELECT id, status, created_at, thread_id FROM applications
    WHERE applicant_id = ? AND id != ?
    ORDER BY created_at DESC`
 );

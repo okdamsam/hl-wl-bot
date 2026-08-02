@@ -49,7 +49,10 @@ export async function handleClaim(interaction: ButtonInteraction): Promise<void>
   const history = getApplicationHistory(applicantId, applicationId);
   if (history.length > 0) {
     const lines = history.map(
-      (r) => `\u2022 #${r.id} \u2014 \`${r.status}\` \u2014 <t:${r.created_at}:d>`,
+      (r) => {
+        const thread = r.thread_id ? ` — <#${r.thread_id}>` : '';
+        return `\u2022 #${r.id} \u2014 \`${r.status}\` \u2014 <t:${r.created_at}:d>${thread}`;
+      },
     );
     await interaction.followUp({
       content: `**Previous applications for <@${applicantId}>:**\n${lines.join('\n')}`,
