@@ -2,7 +2,6 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   GuildMemberRoleManager,
-  PermissionFlagsBits,
   MessageFlags,
   type ChatInputCommandInteraction,
 } from 'discord.js';
@@ -10,8 +9,7 @@ import { getConfig } from '../../db/queries.js';
 
 export const wlRubricCommand = new SlashCommandBuilder()
   .setName('wl-rubric')
-  .setDescription('Show the application review rubric (ephemeral).')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  .setDescription('Show the application review rubric (ephemeral).');
 
 export async function handleWlRubric(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });

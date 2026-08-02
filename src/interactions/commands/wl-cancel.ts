@@ -1,18 +1,18 @@
 import {
   SlashCommandBuilder,
+  GuildMemberRoleManager,
   PermissionFlagsBits,
   MessageFlags,
   ChannelType,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { cancelApplication, getActiveApplication } from '../../db/queries.js';
+import { cancelApplication, getActiveApplication, getConfig } from '../../db/queries.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
 import { logger } from '../../lib/logger.js';
 
 export const wlCancelCommand = new SlashCommandBuilder()
   .setName('wl-cancel')
   .setDescription('Cancel a user\'s active whitelist application')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .addUserOption((opt) =>
     opt
       .setName('user')
@@ -22,6 +22,22 @@ export const wlCancelCommand = new SlashCommandBuilder()
 
 export async function handleWlCancel(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const staffRoleId = getConfig('staff_role_id');
+  const modRoleId = getConfig('mod_role_id');
+  const roles = interaction.member?.roles;
+  const roleIds =
+    roles instanceof GuildMemberRoleManager
+      ? [...roles.cache.keys()]
+      : (roles as string[]) ?? [];
+  const hasAccess =
+    (staffRoleId && roleIds.includes(staffRoleId)) ||
+    (modRoleId && roleIds.includes(modRoleId)) ||
+    interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+  if (!hasAccess) {
+    await interaction.editReply('You need the staff or mod role to cancel applications.');
+    return;
+  }
 
   const target = interaction.options.getUser('user', true);
   const app = getActiveApplication(target.id);

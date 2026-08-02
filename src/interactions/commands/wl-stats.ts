@@ -10,8 +10,7 @@ import { getConfig, getStaffStats } from '../../db/queries.js';
 
 export const wlStatsCommand = new SlashCommandBuilder()
   .setName('wl-stats')
-  .setDescription('Show per-staff decision counts (ephemeral).')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  .setDescription('Show per-staff decision counts (ephemeral).');
 
 export async function handleWlStats(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });

@@ -10,8 +10,7 @@ import { getConfig } from '../../db/queries.js';
 
 export const wlHelpCommand = new SlashCommandBuilder()
   .setName('wl-help')
-  .setDescription('Show the staff review workflow (ephemeral).')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  .setDescription('Show the staff review workflow (ephemeral).');
 
 export async function handleWlHelp(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
