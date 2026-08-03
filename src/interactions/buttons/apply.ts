@@ -11,7 +11,7 @@ import {
   type ButtonInteraction,
 } from 'discord.js';
 import { CUSTOM_IDS } from '../../lib/customId.js';
-import { getConfig, hasActiveApplication } from '../../db/queries.js';
+import { getConfig, hasActiveApplication, getRecentDenial } from '../../db/queries.js';
 
 export async function handleApplyButton(interaction: ButtonInteraction): Promise<void> {
   // Check: user already has a pending or claimed application.
@@ -42,6 +42,18 @@ export async function handleApplyButton(interaction: ButtonInteraction): Promise
       });
       return;
     }
+  }
+
+  // Check: denied within the last 72 hours.
+  const COOLDOWN_SECONDS = 72 * 60 * 60;
+  const deniedAt = getRecentDenial(interaction.user.id, COOLDOWN_SECONDS);
+  if (deniedAt !== null) {
+    const retryAt = deniedAt + COOLDOWN_SECONDS;
+    await interaction.reply({
+      content: `Your most recent application was denied. You may apply again <t:${retryAt}:R>.`,
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
   }
 
   await interaction.showModal(buildApplyModal());

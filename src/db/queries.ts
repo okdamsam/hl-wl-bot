@@ -264,3 +264,23 @@ const stmtQueryByBoth = db.prepare<[string, string], UsernameQueryRow>(
 export function queryByBoth(userId: string, search: string): UsernameQueryRow[] {
   return stmtQueryByBoth.all(userId, `%${search}%`) as UsernameQueryRow[];
 }
+
+// ── Denial cooldown ───────────────────────────────────────────────────────────
+
+const stmtRecentDenial = db.prepare<[string, number], { denied_at: number }>(
+  `SELECT d.created_at AS denied_at
+   FROM decisions d
+   JOIN applications a ON a.id = d.application_id
+   WHERE a.applicant_id = ?
+     AND d.action IN ('deny-req', 'deny-exp')
+     AND d.created_at > ?
+   ORDER BY d.created_at DESC
+   LIMIT 1`
+);
+
+/** Returns the timestamp of the most recent denial within the window, or null. */
+export function getRecentDenial(applicantId: string, windowSeconds: number): number | null {
+  const cutoff = Math.floor(Date.now() / 1000) - windowSeconds;
+  const row = stmtRecentDenial.get(applicantId, cutoff) as { denied_at: number } | undefined;
+  return row?.denied_at ?? null;
+}
