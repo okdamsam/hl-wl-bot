@@ -213,3 +213,27 @@ const stmtStaffStats = db.prepare<[], StaffDecisionRow>(
 export function getStaffStats(): StaffDecisionRow[] {
   return stmtStaffStats.all() as StaffDecisionRow[];
 }
+
+// ── Username search ───────────────────────────────────────────────────────────
+
+export interface UsernameQueryRow {
+  id: number;
+  applicant_id: string;
+  thread_id: string | null;
+  status: string;
+  created_at: number;
+  username: string | null;
+}
+
+const stmtQueryByUsername = db.prepare<[string], UsernameQueryRow>(
+  `SELECT id, applicant_id, thread_id, status, created_at,
+          json_extract(answers, '$.username') AS username
+   FROM applications
+   WHERE json_extract(answers, '$.username') LIKE ?
+   ORDER BY created_at DESC
+   LIMIT 25`
+);
+
+export function queryByUsername(search: string): UsernameQueryRow[] {
+  return stmtQueryByUsername.all(`%${search}%`) as UsernameQueryRow[];
+}
