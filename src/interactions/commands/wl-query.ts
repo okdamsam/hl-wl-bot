@@ -6,13 +6,16 @@ import {
   MessageFlags,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { getConfig, queryByUsername } from '../../db/queries.js';
+import { getConfig, queryByUsername, queryByDiscordUser, queryByBoth, type UsernameQueryRow } from '../../db/queries.js';
 
 export const wlQueryCommand = new SlashCommandBuilder()
   .setName('wl-query')
-  .setDescription('Search applications by SS14 username.')
+  .setDescription('Search applications by SS14 username and/or Discord user.')
   .addStringOption((opt) =>
-    opt.setName('username').setDescription('SS14 in-game username to search for').setRequired(true)
+    opt.setName('username').setDescription('SS14 in-game username (partial match)').setRequired(false)
+  )
+  .addUserOption((opt) =>
+    opt.setName('user').setDescription('Discord user').setRequired(false)
   );
 
 export async function handleWlQuery(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -34,11 +37,29 @@ export async function handleWlQuery(interaction: ChatInputCommandInteraction): P
     return;
   }
 
-  const search = interaction.options.getString('username', true).trim();
-  const rows = queryByUsername(search);
+  const search = interaction.options.getString('username')?.trim() ?? null;
+  const targetUser = interaction.options.getUser('user');
+
+  if (!search && !targetUser) {
+    await interaction.editReply({ content: 'Provide at least one of: `username`, `user`.' });
+    return;
+  }
+
+  let rows: UsernameQueryRow[];
+  if (search && targetUser) {
+    rows = queryByBoth(targetUser.id, search);
+  } else if (targetUser) {
+    rows = queryByDiscordUser(targetUser.id);
+  } else {
+    rows = queryByUsername(search!);
+  }
+
+  const label = [search ? `\`${search}\`` : null, targetUser ? `<@${targetUser.id}>` : null]
+    .filter(Boolean)
+    .join(' + ');
 
   if (rows.length === 0) {
-    await interaction.editReply({ content: `No applications found matching \`${search}\`.` });
+    await interaction.editReply({ content: `No applications found for ${label}.` });
     return;
   }
 
@@ -58,7 +79,7 @@ export async function handleWlQuery(interaction: ChatInputCommandInteraction): P
   });
 
   const embed = new EmbedBuilder()
-    .setTitle(`Query: "${search}"`)
+    .setTitle(`Query: ${label}`)
     .setDescription(lines.join('\n'))
     .setColor(0x5865f2)
     .setFooter({ text: `${rows.length} result${rows.length === 1 ? '' : 's'}` });

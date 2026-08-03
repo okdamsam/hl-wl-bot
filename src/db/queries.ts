@@ -237,3 +237,30 @@ const stmtQueryByUsername = db.prepare<[string], UsernameQueryRow>(
 export function queryByUsername(search: string): UsernameQueryRow[] {
   return stmtQueryByUsername.all(`%${search}%`) as UsernameQueryRow[];
 }
+
+const stmtQueryByDiscordUser = db.prepare<[string], UsernameQueryRow>(
+  `SELECT id, applicant_id, thread_id, status, created_at,
+          json_extract(answers, '$.username') AS username
+   FROM applications
+   WHERE applicant_id = ?
+   ORDER BY created_at DESC
+   LIMIT 25`
+);
+
+export function queryByDiscordUser(userId: string): UsernameQueryRow[] {
+  return stmtQueryByDiscordUser.all(userId) as UsernameQueryRow[];
+}
+
+const stmtQueryByBoth = db.prepare<[string, string], UsernameQueryRow>(
+  `SELECT id, applicant_id, thread_id, status, created_at,
+          json_extract(answers, '$.username') AS username
+   FROM applications
+   WHERE applicant_id = ?
+     AND json_extract(answers, '$.username') LIKE ?
+   ORDER BY created_at DESC
+   LIMIT 25`
+);
+
+export function queryByBoth(userId: string, search: string): UsernameQueryRow[] {
+  return stmtQueryByBoth.all(userId, `%${search}%`) as UsernameQueryRow[];
+}
