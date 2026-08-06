@@ -2,6 +2,8 @@ import { EmbedBuilder, type Client, type TextBasedChannel } from 'discord.js';
 import { getConfig, getPendingApplications, setConfig } from '../db/queries.js';
 import { logger } from '../lib/logger.js';
 
+export type RefreshResult = 'updated' | 'no-config' | 'message-gone' | 'error';
+
 export function buildAdminPanelEmbed(): EmbedBuilder {
   const apps = getPendingApplications();
 
@@ -27,24 +29,25 @@ export function buildAdminPanelEmbed(): EmbedBuilder {
   return embed;
 }
 
-export async function refreshAdminPanel(client: Client): Promise<void> {
+export async function refreshAdminPanel(client: Client): Promise<RefreshResult> {
   const channelId = getConfig('admin_panel_channel_id');
   const messageId = getConfig('admin_panel_message_id');
-  if (!channelId || !messageId) return;
+  if (!channelId || !messageId) return 'no-config';
 
   try {
     const channel = (await client.channels.fetch(channelId)) as TextBasedChannel | null;
-    if (!channel?.isTextBased()) return;
+    if (!channel?.isTextBased()) return 'no-config';
     const message = await channel.messages.fetch(messageId);
     await message.edit({ embeds: [buildAdminPanelEmbed()] });
+    return 'updated';
   } catch (err: unknown) {
     const code = (err as { code?: number }).code;
     if (code === 10008) {
-      // Unknown Message — panel was deleted, clear stored ID
       setConfig('admin_panel_message_id', '');
       logger.warn('Admin panel message was deleted — clearing stored message ID');
-    } else {
-      logger.error('Failed to refresh admin panel', err);
+      return 'message-gone';
     }
+    logger.error('Failed to refresh admin panel', err);
+    return 'error';
   }
 }
