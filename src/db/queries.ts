@@ -347,6 +347,18 @@ export function getOverdueUnalertedApplications(cutoffTs: number): OverdueApplic
   return stmtOverdueUnalerted.all(cutoffTs) as OverdueApplicationRow[];
 }
 
+const stmtAllOverdue = db.prepare<[number], OverdueApplicationRow>(
+  `SELECT id, applicant_id, thread_id, created_at
+   FROM applications
+   WHERE status = 'pending' AND created_at <= ?
+   ORDER BY created_at ASC`
+);
+
+/** Returns all pending applications older than cutoff regardless of alert status. */
+export function getAllOverdueApplications(cutoffTs: number): OverdueApplicationRow[] {
+  return stmtAllOverdue.all(cutoffTs) as OverdueApplicationRow[];
+}
+
 const stmtMarkAlertedOverdue = db.prepare<[number]>(
   `UPDATE applications SET alerted_overdue = 1 WHERE id = ?`
 );

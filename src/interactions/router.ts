@@ -13,6 +13,7 @@ import { handleWlAdminPanel } from './commands/wl-admin-panel.js';
 import { handleWlQuery } from './commands/wl-query.js';
 import { handleWlUnclaim } from './commands/wl-unclaim.js';
 import { handleWlRefresh } from './commands/wl-refresh.js';
+import { handleWlNotify } from './commands/wl-notify.js';
 import { handleApplyButton } from './buttons/apply.js';
 import { handleClaim } from './buttons/claim.js';
 import { handleDecide } from './buttons/decide.js';
@@ -61,6 +62,9 @@ async function dispatch(interaction: Interaction): Promise<void> {
           break;
         case 'wl-refresh':
           await handleWlRefresh(interaction);
+          break;
+        case 'wl-notify':
+          await handleWlNotify(interaction);
           break;
         default:
           await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });

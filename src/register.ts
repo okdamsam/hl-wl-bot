@@ -14,8 +14,9 @@ import { wlAdminPanelCommand } from './interactions/commands/wl-admin-panel.js';
 import { wlQueryCommand } from './interactions/commands/wl-query.js';
 import { wlUnclaimCommand } from './interactions/commands/wl-unclaim.js';
 import { wlRefreshCommand } from './interactions/commands/wl-refresh.js';
+import { wlNotifyCommand } from './interactions/commands/wl-notify.js';
 
-const commands = [wlSetupCommand, wlConfigCommand, wlPanelCommand, wlCancelCommand, wlRubricCommand, wlStatsCommand, wlHelpCommand, wlAdminPanelCommand, wlQueryCommand, wlUnclaimCommand, wlRefreshCommand].map((cmd) => cmd.toJSON());
+const commands = [wlSetupCommand, wlConfigCommand, wlPanelCommand, wlCancelCommand, wlRubricCommand, wlStatsCommand, wlHelpCommand, wlAdminPanelCommand, wlQueryCommand, wlUnclaimCommand, wlRefreshCommand, wlNotifyCommand].map((cmd) => cmd.toJSON());
 
 const rest = new REST().setToken(config.DISCORD_TOKEN);
 
