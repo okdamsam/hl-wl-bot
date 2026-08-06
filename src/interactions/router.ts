@@ -11,6 +11,7 @@ import { handleWlStats } from './commands/wl-stats.js';
 import { handleWlHelp } from './commands/wl-help.js';
 import { handleWlAdminPanel } from './commands/wl-admin-panel.js';
 import { handleWlQuery } from './commands/wl-query.js';
+import { handleWlUnclaim } from './commands/wl-unclaim.js';
 import { handleApplyButton } from './buttons/apply.js';
 import { handleClaim } from './buttons/claim.js';
 import { handleDecide } from './buttons/decide.js';
@@ -53,6 +54,9 @@ async function dispatch(interaction: Interaction): Promise<void> {
           break;
         case 'wl-query':
           await handleWlQuery(interaction);
+          break;
+        case 'wl-unclaim':
+          await handleWlUnclaim(interaction);
           break;
         default:
           await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });

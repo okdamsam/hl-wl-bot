@@ -99,6 +99,38 @@ export function decideApplication(id: number, newStatus: string): string | null 
   return row?.applicant_id ?? null;
 }
 
+export interface ApplicationRow {
+  id: number;
+  applicant_id: string;
+  thread_id: string | null;
+  status: string;
+  claimed_by: string | null;
+}
+
+const stmtGetApplicationById = db.prepare<[number], ApplicationRow>(
+  `SELECT id, applicant_id, thread_id, status, claimed_by FROM applications WHERE id = ?`
+);
+
+/** Returns a single application row by ID, or null if not found. */
+export function getApplicationById(id: number): ApplicationRow | null {
+  return (stmtGetApplicationById.get(id) as ApplicationRow | undefined) ?? null;
+}
+
+const stmtUnclaimApplication = db.prepare<[number]>(
+  `UPDATE applications SET status = 'pending', claimed_by = NULL, claimed_at = NULL
+   WHERE id = ? AND status = 'claimed'
+   RETURNING applicant_id`
+);
+
+/**
+ * Conditionally transitions an application from claimed → pending and clears the claimer.
+ * Returns the applicant_id on success, null if not currently claimed.
+ */
+export function unclaimApplication(id: number): string | null {
+  const row = stmtUnclaimApplication.get(id) as { applicant_id: string } | undefined;
+  return row?.applicant_id ?? null;
+}
+
 const stmtInsertDecision = db.prepare<[number, string, string, string | null, number]>(
   `INSERT INTO decisions (application_id, staff_id, action, note, created_at)
    VALUES (?, ?, ?, ?, ?)`
