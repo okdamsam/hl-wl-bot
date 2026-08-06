@@ -15,6 +15,7 @@ import {
 } from '../../db/queries.js';
 import { buildPendingPanel } from '../../services/applications.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
+import { runAlertChecks } from '../../services/alerts.js';
 import { logger } from '../../lib/logger.js';
 
 function truncate(text: string, max = 1024): string {
@@ -230,6 +231,9 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
   // ── Refresh admin panel ──────────────────────────────────────────────────────
   refreshAdminPanel(interaction.client).catch((err: unknown) =>
     logger.warn(`Failed to refresh admin panel for app ${applicationId}`, err)
+  );
+  runAlertChecks(interaction.client).catch((err: unknown) =>
+    logger.warn(`Failed to run alert checks for app ${applicationId}`, err)
   );
 
   logger.info(`Application ${applicationId} created — thread ${thread.id} — user ${interaction.user.id}`);

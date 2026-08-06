@@ -316,3 +316,46 @@ export function getRecentDenial(applicantId: string, windowSeconds: number): num
   const row = stmtRecentDenial.get(applicantId, cutoff) as { denied_at: number } | undefined;
   return row?.denied_at ?? null;
 }
+
+// ── Alert checks ──────────────────────────────────────────────────────────────
+
+const stmtPendingOnlyCount = db.prepare<[], { cnt: number }>(
+  `SELECT COUNT(*) AS cnt FROM applications WHERE status = 'pending'`
+);
+
+/** Returns the number of unclaimed (pending) applications. */
+export function getPendingOnlyCount(): number {
+  return (stmtPendingOnlyCount.get() as { cnt: number }).cnt;
+}
+
+export interface OverdueApplicationRow {
+  id: number;
+  applicant_id: string;
+  thread_id: string | null;
+  created_at: number;
+}
+
+const stmtOverdueUnalerted = db.prepare<[number], OverdueApplicationRow>(
+  `SELECT id, applicant_id, thread_id, created_at
+   FROM applications
+   WHERE status = 'pending' AND created_at <= ? AND alerted_overdue = 0
+   ORDER BY created_at ASC`
+);
+
+/** Returns pending applications older than cutoff that haven't been alerted yet. */
+export function getOverdueUnalertedApplications(cutoffTs: number): OverdueApplicationRow[] {
+  return stmtOverdueUnalerted.all(cutoffTs) as OverdueApplicationRow[];
+}
+
+const stmtMarkAlertedOverdue = db.prepare<[number]>(
+  `UPDATE applications SET alerted_overdue = 1 WHERE id = ?`
+);
+
+const txMarkAlertedOverdue = db.transaction((ids: number[]) => {
+  for (const id of ids) stmtMarkAlertedOverdue.run(id);
+});
+
+/** Marks a batch of applications as having received the overdue alert. */
+export function markApplicationsAlertedOverdue(ids: number[]): void {
+  if (ids.length > 0) txMarkAlertedOverdue(ids);
+}

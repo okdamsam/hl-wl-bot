@@ -8,6 +8,7 @@ import {
 import { getApplicationById, unclaimApplication, insertDecision } from '../../db/queries.js';
 import { buildPendingPanel } from '../../services/applications.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
+import { runAlertChecks } from '../../services/alerts.js';
 import { encode } from '../../lib/customId.js';
 import { logger } from '../../lib/logger.js';
 
@@ -110,6 +111,9 @@ export async function handleWlUnclaim(interaction: ChatInputCommandInteraction):
 
   refreshAdminPanel(interaction.client).catch((e: unknown) =>
     logger.error('Failed to refresh admin panel after unclaim', e)
+  );
+  runAlertChecks(interaction.client).catch((e: unknown) =>
+    logger.error('Failed to run alert checks after unclaim', e)
   );
 
   const previousClaimer = app.claimed_by ? `<@${app.claimed_by}>` : 'unknown';
