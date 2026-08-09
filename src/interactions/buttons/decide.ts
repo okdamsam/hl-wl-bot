@@ -87,7 +87,9 @@ export async function handleDecide(interaction: ButtonInteraction): Promise<void
         ],
       });
     } catch (err) {
-      logger.warn(`Could not DM applicant ${applicantId} for app ${applicationId} — DMs may be closed`, err);
+      const code = (err as { code?: number }).code;
+      const reason = code === 50007 ? 'DMs are closed' : code === 50278 ? 'no mutual guilds (user may have left)' : 'unknown reason';
+      logger.warn(`Could not DM applicant ${applicantId} for app ${applicationId} — ${reason}`, err);
     }
 
     const thread = interaction.channel;

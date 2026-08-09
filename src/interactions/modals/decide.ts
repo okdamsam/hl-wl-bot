@@ -80,7 +80,9 @@ export async function handleDecideModal(interaction: ModalSubmitInteraction): Pr
     const applicantUser = await interaction.client.users.fetch(applicantId);
     await applicantUser.send({ embeds: [dmEmbed] });
   } catch (err) {
-    logger.warn(`Could not DM applicant ${applicantId} for app ${applicationId} — DMs may be closed`, err);
+    const code = (err as { code?: number }).code;
+    const reason = code === 50007 ? 'DMs are closed' : code === 50278 ? 'no mutual guilds (user may have left)' : 'unknown reason';
+    logger.warn(`Could not DM applicant ${applicantId} for app ${applicationId} — ${reason}`, err);
   }
 
   // Log decision in thread
