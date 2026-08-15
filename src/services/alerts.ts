@@ -10,7 +10,7 @@ import {
 import { logger } from '../lib/logger.js';
 
 const QUEUE_THRESHOLD = 10;
-const OVERDUE_SECONDS = 24 * 60 * 60;
+const OVERDUE_SECONDS = 72 * 60 * 60;
 
 export async function runAlertChecks(client: Client): Promise<void> {
   const channelId = getConfig('admin_panel_channel_id');
@@ -76,7 +76,7 @@ async function checkOverdueAlert(channel: TextChannel, staffRoleId: string): Pro
         new EmbedBuilder()
           .setTitle('⏰ Overdue Application Alert')
           .setDescription(
-            `The following ${overdueApps.length === 1 ? 'application has' : `${overdueApps.length} applications have`} been unclaimed for over 24 hours:\n\n${lines.join('\n')}`
+            `The following ${overdueApps.length === 1 ? 'application has' : `${overdueApps.length} applications have`} been unclaimed for over 72 hours:\n\n${lines.join('\n')}`
           )
           .setColor(0xed4245)
           .setTimestamp(),

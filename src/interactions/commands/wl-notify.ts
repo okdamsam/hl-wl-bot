@@ -9,7 +9,7 @@ import {
 import { getConfig, getPendingOnlyCount, getAllOverdueApplications } from '../../db/queries.js';
 import { logger } from '../../lib/logger.js';
 
-const OVERDUE_SECONDS = 24 * 60 * 60;
+const OVERDUE_SECONDS = 72 * 60 * 60;
 
 export const wlNotifyCommand = new SlashCommandBuilder()
   .setName('wl-notify')
@@ -72,7 +72,7 @@ export async function handleWlNotify(interaction: ChatInputCommandInteraction): 
     });
     embeds.push(
       new EmbedBuilder()
-        .setTitle('⏰ Overdue Applications (>24 h)')
+        .setTitle('⏰ Overdue Applications (>72 h)')
         .setDescription(lines.join('\n'))
         .setColor(0xed4245),
     );
