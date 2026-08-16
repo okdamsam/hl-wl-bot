@@ -44,7 +44,7 @@ export async function handleWlPanel(interaction: ChatInputCommandInteraction): P
       'Applications are evaluated on how well you demonstrate that understanding.\n\n' +
       '**Minimum requirements:**\n' +
       '• **18 years or older** — no exceptions\n' +
-      '• **200+ hours** on LRP servers, **100+ hours** on MRP servers, or **50+ hours** on HRP servers\n' +
+      '• **200+ hours** on LRP servers, **100+ hours** on MRP servers, or **50+ hours** on HRP servers *(including SS13 servers)*\n' +
       '• An adherence to MRP guidelines and HardLight community expectations\n\n' +
       '**To apply you will also need:**\n' +
       '• A screenshot of your in-game playtime (not Steam hours)\n\n' +
