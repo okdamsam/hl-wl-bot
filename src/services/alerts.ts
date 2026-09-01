@@ -2,6 +2,7 @@
 import { EmbedBuilder, type Client, type TextChannel } from 'discord.js';
 import {
   getConfig,
+  getRoleIds,
   setConfig,
   getPendingOnlyCount,
   getOverdueUnalertedApplications,
@@ -14,8 +15,8 @@ const OVERDUE_SECONDS = 72 * 60 * 60;
 
 export async function runAlertChecks(client: Client): Promise<void> {
   const channelId = getConfig('admin_panel_channel_id');
-  const staffRoleId = getConfig('staff_role_id');
-  if (!channelId || !staffRoleId) return;
+  const staffRoleIds = getRoleIds('staff_role_ids');
+  if (!channelId || staffRoleIds.length === 0) return;
 
   let channel: TextChannel;
   try {
@@ -27,11 +28,12 @@ export async function runAlertChecks(client: Client): Promise<void> {
     return;
   }
 
-  await checkQueueAlert(channel, staffRoleId);
-  await checkOverdueAlert(channel, staffRoleId);
+  const roleMentions = staffRoleIds.map((id) => `<@&${id}>`).join(' ');
+  await checkQueueAlert(channel, roleMentions);
+  await checkOverdueAlert(channel, roleMentions);
 }
 
-async function checkQueueAlert(channel: TextChannel, staffRoleId: string): Promise<void> {
+async function checkQueueAlert(channel: TextChannel, roleMentions: string): Promise<void> {
   const currentCount = getPendingOnlyCount();
   const previousCount = parseInt(getConfig('queue_alert_last_pending_count') ?? '0', 10);
 
@@ -41,7 +43,7 @@ async function checkQueueAlert(channel: TextChannel, staffRoleId: string): Promi
   if (currentCount >= QUEUE_THRESHOLD && previousCount < QUEUE_THRESHOLD) {
     try {
       await channel.send({
-        content: `<@&${staffRoleId}>`,
+        content: roleMentions,
         embeds: [
           new EmbedBuilder()
             .setTitle('📋 Application Queue Alert')
@@ -57,7 +59,7 @@ async function checkQueueAlert(channel: TextChannel, staffRoleId: string): Promi
   }
 }
 
-async function checkOverdueAlert(channel: TextChannel, staffRoleId: string): Promise<void> {
+async function checkOverdueAlert(channel: TextChannel, roleMentions: string): Promise<void> {
   const cutoff = Math.floor(Date.now() / 1000) - OVERDUE_SECONDS;
   const overdueApps = getOverdueUnalertedApplications(cutoff);
   if (overdueApps.length === 0) return;
@@ -71,7 +73,7 @@ async function checkOverdueAlert(channel: TextChannel, staffRoleId: string): Pro
 
   try {
     await channel.send({
-      content: `<@&${staffRoleId}>`,
+      content: roleMentions,
       embeds: [
         new EmbedBuilder()
           .setTitle('⏰ Overdue Application Alert')

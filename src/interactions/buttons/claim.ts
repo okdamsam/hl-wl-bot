@@ -4,7 +4,7 @@ import {
   type ButtonInteraction,
 } from 'discord.js';
 import { decode } from '../../lib/customId.js';
-import { claimApplication, getApplicationHistory, getConfig } from '../../db/queries.js';
+import { claimApplication, getApplicationHistory, getRoleIds } from '../../db/queries.js';
 import { buildClaimedPanel } from '../../services/applications.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
 import { logger } from '../../lib/logger.js';
@@ -13,14 +13,14 @@ export async function handleClaim(interaction: ButtonInteraction): Promise<void>
   await interaction.deferUpdate();
 
   // Staff role gate
-  const staffRoleId = getConfig('staff_role_id');
-  if (staffRoleId) {
+  const staffRoleIds = getRoleIds('staff_role_ids');
+  if (staffRoleIds.length > 0) {
     const roles = interaction.member?.roles;
     const roleIds =
       roles instanceof GuildMemberRoleManager
         ? [...roles.cache.keys()]
         : (roles as string[]) ?? [];
-    if (!roleIds.includes(staffRoleId)) {
+    if (!roleIds.some((id) => staffRoleIds.includes(id))) {
       await interaction.followUp({
         content: 'You need the staff role to claim applications.',
         flags: MessageFlags.Ephemeral,

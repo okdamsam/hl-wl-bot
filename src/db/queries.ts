@@ -20,6 +20,26 @@ export function setConfig(key: string, value: string): void {
   stmtConfigSet.run(key, value);
 }
 
+export function getRoleIds(key: string): string[] {
+  const raw = getConfig(key);
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addRoleId(key: string, id: string): void {
+  const ids = getRoleIds(key);
+  if (!ids.includes(id)) setConfig(key, JSON.stringify([...ids, id]));
+}
+
+export function removeRoleId(key: string, id: string): void {
+  setConfig(key, JSON.stringify(getRoleIds(key).filter((r) => r !== id)));
+}
+
 // ── applications ────────────────────────────────────────────────────────────
 
 const stmtHasActiveApplication = db.prepare<[string], { id: number }>(

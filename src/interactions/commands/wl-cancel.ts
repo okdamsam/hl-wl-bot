@@ -6,7 +6,7 @@ import {
   ChannelType,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { cancelApplication, getActiveApplication, getConfig } from '../../db/queries.js';
+import { cancelApplication, getActiveApplication, getRoleIds } from '../../db/queries.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
 import { logger } from '../../lib/logger.js';
 
@@ -23,16 +23,16 @@ export const wlCancelCommand = new SlashCommandBuilder()
 export async function handleWlCancel(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-  const staffRoleId = getConfig('staff_role_id');
-  const modRoleId = getConfig('mod_role_id');
+  const staffRoleIds = getRoleIds('staff_role_ids');
+  const modRoleIds = getRoleIds('mod_role_ids');
   const roles = interaction.member?.roles;
   const roleIds =
     roles instanceof GuildMemberRoleManager
       ? [...roles.cache.keys()]
       : (roles as string[]) ?? [];
   const hasAccess =
-    (staffRoleId && roleIds.includes(staffRoleId)) ||
-    (modRoleId && roleIds.includes(modRoleId)) ||
+    roleIds.some((id) => staffRoleIds.includes(id)) ||
+    roleIds.some((id) => modRoleIds.includes(id)) ||
     interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
   if (!hasAccess) {
     await interaction.editReply('You need the staff or mod role to cancel applications.');

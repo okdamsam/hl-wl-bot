@@ -6,7 +6,7 @@ import {
   type ChatInputCommandInteraction,
   type TextChannel,
 } from 'discord.js';
-import { getConfig, getPendingOnlyCount, getAllOverdueApplications } from '../../db/queries.js';
+import { getConfig, getRoleIds, getPendingOnlyCount, getAllOverdueApplications } from '../../db/queries.js';
 import { logger } from '../../lib/logger.js';
 
 const OVERDUE_SECONDS = 72 * 60 * 60;
@@ -25,9 +25,9 @@ export async function handleWlNotify(interaction: ChatInputCommandInteraction): 
   }
 
   const channelId = getConfig('admin_panel_channel_id');
-  const staffRoleId = getConfig('staff_role_id');
+  const staffRoleIds = getRoleIds('staff_role_ids');
 
-  if (!channelId || !staffRoleId) {
+  if (!channelId || staffRoleIds.length === 0) {
     await interaction.editReply({ content: 'Admin panel channel or staff role is not configured. Run `/wl-setup` first.' });
     return;
   }
@@ -79,7 +79,7 @@ export async function handleWlNotify(interaction: ChatInputCommandInteraction): 
   }
 
   try {
-    await channel.send({ content: `<@&${staffRoleId}>`, embeds });
+    await channel.send({ content: staffRoleIds.map((id) => `<@&${id}>`).join(' '), embeds });
     logger.info(`Manual staff notify sent by ${interaction.user.id}: ${pendingCount} pending, ${overdueApps.length} overdue`);
     await interaction.editReply({ content: `Notification sent to <#${channelId}>.` });
   } catch (err) {

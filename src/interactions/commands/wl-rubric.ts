@@ -5,7 +5,7 @@ import {
   MessageFlags,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { getConfig } from '../../db/queries.js';
+import { getRoleIds } from '../../db/queries.js';
 
 export const wlRubricCommand = new SlashCommandBuilder()
   .setName('wl-rubric')
@@ -15,16 +15,16 @@ export async function handleWlRubric(interaction: ChatInputCommandInteraction): 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   // Staff / mod role gate
-  const staffRoleId = getConfig('staff_role_id');
-  const modRoleId = getConfig('mod_role_id');
+  const staffRoleIds = getRoleIds('staff_role_ids');
+  const modRoleIds = getRoleIds('mod_role_ids');
   const roles = interaction.member?.roles;
   const roleIds =
     roles instanceof GuildMemberRoleManager
       ? [...roles.cache.keys()]
       : (roles as string[]) ?? [];
   const hasAccess =
-    (staffRoleId && roleIds.includes(staffRoleId)) ||
-    (modRoleId && roleIds.includes(modRoleId));
+    roleIds.some((id) => staffRoleIds.includes(id)) ||
+    roleIds.some((id) => modRoleIds.includes(id));
   if (!hasAccess) {
     await interaction.editReply({ content: 'You need the staff or mod role to view the rubric.' });
     return;

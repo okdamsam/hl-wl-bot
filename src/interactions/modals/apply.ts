@@ -10,6 +10,7 @@ import { CUSTOM_IDS } from '../../lib/customId.js';
 import {
   deleteApplication,
   getConfig,
+  getRoleIds,
   insertApplication,
   updateApplicationThread,
 } from '../../db/queries.js';
@@ -199,17 +200,17 @@ export async function handleApplyModal(interaction: ModalSubmitInteraction): Pro
     logger.error(`Failed to post pending panel for app ${applicationId}`, err);
   });
 
-  // ── Notify active staff (staff role, excluding on-leave) ────────────────────
-  const staffRoleId = getConfig('staff_role_id');
+  // ── Notify active staff (staff roles, excluding on-leave) ──────────────────────
+  const staffRoleIds = getRoleIds('staff_role_ids');
   const pingEnabled = getConfig('staff_ping_enabled') ?? '1';
-  if (staffRoleId && pingEnabled === '1') {
+  if (staffRoleIds.length > 0 && pingEnabled === '1') {
     try {
-      const onLeaveRoleId = getConfig('on_leave_role_id');
+      const onLeaveRoleIds = getRoleIds('on_leave_role_ids');
       const allMembers = await interaction.guild.members.fetch();
       const activeStaff = allMembers.filter(
         (m) =>
-          m.roles.cache.has(staffRoleId) &&
-          (!onLeaveRoleId || !m.roles.cache.has(onLeaveRoleId)),
+          staffRoleIds.some((id) => m.roles.cache.has(id)) &&
+          !onLeaveRoleIds.some((id) => m.roles.cache.has(id)),
       );
       if (activeStaff.size > 0) {
         const mentions = activeStaff.map((m) => `<@${m.id}>`).join(' ');

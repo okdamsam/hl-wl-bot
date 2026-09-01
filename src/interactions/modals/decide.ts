@@ -5,7 +5,7 @@ import {
   type ModalSubmitInteraction,
 } from 'discord.js';
 import { decode } from '../../lib/customId.js';
-import { decideApplication, getConfig, insertDecision } from '../../db/queries.js';
+import { decideApplication, getRoleIds, insertDecision } from '../../db/queries.js';
 import { buildDecidedPanel } from '../../services/applications.js';
 import { refreshAdminPanel } from '../../services/admin-panel.js';
 import { logger } from '../../lib/logger.js';
@@ -24,14 +24,14 @@ export async function handleDecideModal(interaction: ModalSubmitInteraction): Pr
   const applicationId = parseInt(appIdStr, 10);
 
   // Staff role gate
-  const staffRoleId = getConfig('staff_role_id');
-  if (staffRoleId) {
+  const staffRoleIds = getRoleIds('staff_role_ids');
+  if (staffRoleIds.length > 0) {
     const roles = interaction.member?.roles;
     const roleIds =
       roles instanceof GuildMemberRoleManager
         ? [...roles.cache.keys()]
         : (roles as string[]) ?? [];
-    if (!roleIds.includes(staffRoleId)) {
+    if (!roleIds.some((id) => staffRoleIds.includes(id))) {
       await interaction.editReply('You need the staff role to decide applications.');
       return;
     }

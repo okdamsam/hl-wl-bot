@@ -13,19 +13,20 @@ import {
   decideApplication,
   getClaimedBy,
   getConfig,
+  getRoleIds,
   insertDecision,
 } from '../../db/queries.js';
 import { buildDecidedPanel } from '../../services/applications.js';import { refreshAdminPanel } from '../../services/admin-panel.js';import { logger } from '../../lib/logger.js';
 
 function staffCheck(interaction: ButtonInteraction): boolean {
-  const staffRoleId = getConfig('staff_role_id');
-  if (!staffRoleId) return true;
+  const staffRoleIds = getRoleIds('staff_role_ids');
+  if (staffRoleIds.length === 0) return true;
   const roles = interaction.member?.roles;
   const roleIds =
     roles instanceof GuildMemberRoleManager
       ? [...roles.cache.keys()]
       : (roles as string[]) ?? [];
-  return roleIds.includes(staffRoleId);
+  return roleIds.some((id) => staffRoleIds.includes(id));
 }
 
 export async function handleDecide(interaction: ButtonInteraction): Promise<void> {

@@ -5,7 +5,7 @@ import {
   ChannelType,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { setConfig } from '../../db/queries.js';
+import { setConfig, getRoleIds, addRoleId, removeRoleId } from '../../db/queries.js';
 import { logger } from '../../lib/logger.js';
 
 export const wlSetupCommand = new SlashCommandBuilder()
@@ -44,28 +44,52 @@ export const wlSetupCommand = new SlashCommandBuilder()
         opt.setName('role').setDescription('The whitelist role').setRequired(true)
       )
   )
-  .addSubcommand((sub) =>
-    sub
+  .addSubcommandGroup((group) =>
+    group
       .setName('staff-role')
-      .setDescription('Role that can claim and decide applications')
-      .addRoleOption((opt) =>
-        opt.setName('role').setDescription('The staff role').setRequired(true)
+      .setDescription('Roles that can claim and decide applications')
+      .addSubcommand((sub) =>
+        sub.setName('add').setDescription('Add a role to the staff list')
+          .addRoleOption((opt) => opt.setName('role').setDescription('Role to add').setRequired(true))
+      )
+      .addSubcommand((sub) =>
+        sub.setName('remove').setDescription('Remove a role from the staff list')
+          .addRoleOption((opt) => opt.setName('role').setDescription('Role to remove').setRequired(true))
+      )
+      .addSubcommand((sub) =>
+        sub.setName('list').setDescription('List configured staff roles')
       )
   )
-  .addSubcommand((sub) =>
-    sub
+  .addSubcommandGroup((group) =>
+    group
       .setName('mod-role')
-      .setDescription('Role whose members are silently added to every new application thread')
-      .addRoleOption((opt) =>
-        opt.setName('role').setDescription('The mod role').setRequired(true)
+      .setDescription('Roles whose members are silently added to every new application thread')
+      .addSubcommand((sub) =>
+        sub.setName('add').setDescription('Add a role to the mod list')
+          .addRoleOption((opt) => opt.setName('role').setDescription('Role to add').setRequired(true))
+      )
+      .addSubcommand((sub) =>
+        sub.setName('remove').setDescription('Remove a role from the mod list')
+          .addRoleOption((opt) => opt.setName('role').setDescription('Role to remove').setRequired(true))
+      )
+      .addSubcommand((sub) =>
+        sub.setName('list').setDescription('List configured mod roles')
       )
   )
-  .addSubcommand((sub) =>
-    sub
+  .addSubcommandGroup((group) =>
+    group
       .setName('on-leave-role')
-      .setDescription('Members with this role are excluded from new-application pings')
-      .addRoleOption((opt) =>
-        opt.setName('role').setDescription('The on-leave role').setRequired(true)
+      .setDescription('Members with any of these roles are excluded from new-application pings')
+      .addSubcommand((sub) =>
+        sub.setName('add').setDescription('Add a role to the on-leave list')
+          .addRoleOption((opt) => opt.setName('role').setDescription('Role to add').setRequired(true))
+      )
+      .addSubcommand((sub) =>
+        sub.setName('remove').setDescription('Remove a role from the on-leave list')
+          .addRoleOption((opt) => opt.setName('role').setDescription('Role to remove').setRequired(true))
+      )
+      .addSubcommand((sub) =>
+        sub.setName('list').setDescription('List configured on-leave roles')
       )
   )
   .addSubcommand((sub) =>
@@ -101,9 +125,50 @@ export async function handleWlSetup(interaction: ChatInputCommandInteraction): P
     return;
   }
 
+  const group = interaction.options.getSubcommandGroup(false);
   const sub = interaction.options.getSubcommand();
 
   try {
+    // ── Multi-role subcommand groups ──────────────────────────────────────────
+    if (group) {
+      const keyMap: Record<string, string> = {
+        'staff-role': 'staff_role_ids',
+        'mod-role': 'mod_role_ids',
+        'on-leave-role': 'on_leave_role_ids',
+      };
+      const labelMap: Record<string, string> = {
+        'staff-role': 'Staff',
+        'mod-role': 'Mod',
+        'on-leave-role': 'On-leave',
+      };
+      const key = keyMap[group];
+      const label = labelMap[group];
+      switch (sub) {
+        case 'add': {
+          const role = interaction.options.getRole('role', true);
+          addRoleId(key, role.id);
+          await interaction.editReply(`Added <@&${role.id}> to the ${label.toLowerCase()} role list.`);
+          break;
+        }
+        case 'remove': {
+          const role = interaction.options.getRole('role', true);
+          removeRoleId(key, role.id);
+          await interaction.editReply(`Removed <@&${role.id}> from the ${label.toLowerCase()} role list.`);
+          break;
+        }
+        case 'list': {
+          const ids = getRoleIds(key);
+          await interaction.editReply(
+            ids.length === 0
+              ? `No ${label.toLowerCase()} roles configured.`
+              : `${label} roles: ${ids.map((id) => `<@&${id}>`).join(', ')}`,
+          );
+          break;
+        }
+      }
+      return;
+    }
+
     switch (sub) {
       case 'applications-channel': {
         const channel = interaction.options.getChannel('channel', true);
@@ -123,24 +188,7 @@ export async function handleWlSetup(interaction: ChatInputCommandInteraction): P
         await interaction.editReply(`Whitelist role set to <@&${role.id}>.`);
         break;
       }
-      case 'staff-role': {
-        const role = interaction.options.getRole('role', true);
-        setConfig('staff_role_id', role.id);
-        await interaction.editReply(`Staff role set to <@&${role.id}>.`);
-        break;
-      }
-      case 'mod-role': {
-        const role = interaction.options.getRole('role', true);
-        setConfig('mod_role_id', role.id);
-        await interaction.editReply(`Mod role set to <@&${role.id}>. Members of this role will be added to new application threads silently.`);
-        break;
-      }
-      case 'on-leave-role': {
-        const role = interaction.options.getRole('role', true);
-        setConfig('on_leave_role_id', role.id);
-        await interaction.editReply(`On-leave role set to <@&${role.id}>. Members with this role will be skipped when pinging staff.`);
-        break;
-      }
+
       case 'staff-ping': {
         const val = interaction.options.getString('enabled', true);
         setConfig('staff_ping_enabled', val);
