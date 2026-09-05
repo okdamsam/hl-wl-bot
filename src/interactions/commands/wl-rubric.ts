@@ -63,8 +63,7 @@ export async function handleWlRubric(interaction: ChatInputCommandInteraction): 
     .setColor(0x5865f2)
     .setDescription(
       '**Pass:** The research assistant stays a research assistant. They articulate the gap between what the player could do and what the character would do - and the character\'s response fits the character.\n\n' +
-      '**Fail:** Suits up and fights. Or names the right answer but can\'t explain the distinction, which usually means they\'ve learned the phrase rather than the principle.\n\n' +
-      '**Still confirm this against your own ruleset** before it goes live. If your rules permit crew arming during a nuke op, an applicant who says they\'d defend the station is reading you correctly, and you\'d be failing them for it.',
+      '**Fail:** Suits up and fights. Or names the right answer but can\'t explain the distinction, which usually means they\'ve learned the phrase rather than the principle.',
     );
 
   const deciding = new EmbedBuilder()
