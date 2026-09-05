@@ -73,7 +73,7 @@ export async function handleWlRubric(interaction: ChatInputCommandInteraction): 
       '**Deny (Requirements)** - objective, no judgment call. Under the hours bar. Undisclosed ban surfaces. Steam screenshot or illegible playtime. Didn\'t answer all four.\n\n' +
       '**Deny (Expectations)** - a fail on **Q3 or Q4 alone is sufficient.** These are the two that predict whether someone becomes a problem in month three, and neither is really coachable.\n\n' +
       '**Q1 or Q2 alone - ask a follow-up first.** Both are about presentation as much as substance, and a nervous applicant can underperform on either. Give them one prompt in the thread before you decide.\n\n' +
-      'Whatever the outcome, put your reasoning in the decision note. Six reviewers grading independently will drift within a month otherwise, and the note is what lets you spot it.',
+      'Whatever the outcome, put your reasoning in the decision note.',
     );
 
   await interaction.editReply({ embeds: [q1, q2, q3, q4, deciding] });
