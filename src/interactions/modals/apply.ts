@@ -36,16 +36,16 @@ function buildQuestionsEmbed(userId: string): EmbedBuilder {
       {
         name: 'Question 1 — Your character',
         value:
-          'Tell us about a character you intend to play here.\n' +
-          '- What are they competent at?\n' +
-          '- What are they bad at, or simply wrong about?\n' +
-          '- Name one specific situation where this character would make things **worse** rather than better.\n\n' +
+          'Tell us about the personality of a character you intend to play here.\n' +
+          '- What traits make them good to have as a crewmate?\n' +
+          '- What are their flaws?\n' +
+          '- Describe one specific situation where they would make things worse by getting involved.\n' +
           'We are not looking for someone who is the best at their job.',
       },
       {
         name: 'Question 2 — In character',
         value:
-          "Mid-shift, your character is approached by someone offering 15,000 spesos in cash for the SCAF hardsuit your character is wearing. The offer is serious and the buyer is in a hurry.\n\n" +
+          "Mid-shift, your character is approached by someone offering 15,000 spesos in cash for the armored hardsuit your character is wearing. The offer is serious and the buyer is in a hurry.\n\n" +
           'Write your character\'s response **exactly as you would type it in game.** Use emotes, and make it clear whether you\'re speaking aloud, using the radio, or whispering.\n\n' +
           "We're reading for how you write in character — not for whether you take the deal.",
       },
