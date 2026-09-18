@@ -2,6 +2,23 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { getTeam, getTeamMembers } from './db/queries.js';
 import { logger } from './lib/logger.js';
 
+const allowedOrigins = new Set(
+  (process.env['CORS_ORIGINS'] ?? 'https://docs.hardlight.space')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0),
+);
+
+function applyCors(request: IncomingMessage, response: ServerResponse): void {
+  const origin = request.headers.origin;
+  response.setHeader('Vary', 'Origin');
+  if (!origin || !allowedOrigins.has(origin)) return;
+
+  response.setHeader('Access-Control-Allow-Origin', origin);
+  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
 function sendJson(response: ServerResponse, status: number, body: unknown): void {
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -11,6 +28,14 @@ function sendJson(response: ServerResponse, status: number, body: unknown): void
 }
 
 function handleRequest(request: IncomingMessage, response: ServerResponse): void {
+  applyCors(request, response);
+
+  if (request.method === 'OPTIONS') {
+    response.writeHead(204);
+    response.end();
+    return;
+  }
+
   if (request.method !== 'GET') {
     sendJson(response, 405, { error: 'Method not allowed' });
     return;
