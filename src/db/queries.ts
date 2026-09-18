@@ -391,3 +391,125 @@ const txMarkAlertedOverdue = db.transaction((ids: number[]) => {
 export function markApplicationsAlertedOverdue(ids: number[]): void {
   if (ids.length > 0) txMarkAlertedOverdue(ids);
 }
+
+// ── Teams ────────────────────────────────────────────────────────────────────
+
+export type TeamRole = 'leader' | 'senior' | 'member';
+
+export interface TeamRow {
+  id: number;
+  slug: string;
+  display_name: string;
+  active: number;
+}
+
+export interface TeamMemberRow {
+  team_id: number;
+  discord_user_id: string;
+  display_name: string;
+  team_role: TeamRole;
+  speciality: string | null;
+}
+
+const stmtCreateTeam = db.prepare<[string, string, number], { id: number }>(
+  `INSERT INTO teams (slug, display_name, created_at) VALUES (?, ?, ?) RETURNING id`,
+);
+
+export function createTeam(slug: string, displayName: string): number {
+  return (stmtCreateTeam.get(slug, displayName, Math.floor(Date.now() / 1000)) as { id: number }).id;
+}
+
+const stmtArchiveTeam = db.prepare<[string]>(
+  `UPDATE teams SET active = 0 WHERE slug = ? AND active = 1`,
+);
+
+export function archiveTeam(slug: string): boolean {
+  return stmtArchiveTeam.run(slug).changes === 1;
+}
+
+const stmtGetTeam = db.prepare<[string], TeamRow>(
+  `SELECT id, slug, display_name, active FROM teams WHERE slug = ?`,
+);
+
+export function getTeam(slug: string): TeamRow | null {
+  return (stmtGetTeam.get(slug) as TeamRow | undefined) ?? null;
+}
+
+const stmtGetActiveTeams = db.prepare<[], TeamRow>(
+  `SELECT id, slug, display_name, active FROM teams WHERE active = 1 ORDER BY display_name`,
+);
+
+export function getActiveTeams(): TeamRow[] {
+  return stmtGetActiveTeams.all() as TeamRow[];
+}
+
+const stmtSetTeamManager = db.prepare<[number, string]>(
+  `INSERT OR IGNORE INTO team_managers (team_id, discord_user_id) VALUES (?, ?)`,
+);
+
+export function setTeamManager(teamId: number, discordUserId: string): void {
+  stmtSetTeamManager.run(teamId, discordUserId);
+}
+
+const stmtRemoveTeamManager = db.prepare<[number, string]>(
+  `DELETE FROM team_managers WHERE team_id = ? AND discord_user_id = ?`,
+);
+
+export function removeTeamManager(teamId: number, discordUserId: string): boolean {
+  return stmtRemoveTeamManager.run(teamId, discordUserId).changes === 1;
+}
+
+const stmtIsTeamManager = db.prepare<[number, string]>(
+  `SELECT 1 FROM team_managers WHERE team_id = ? AND discord_user_id = ?`,
+);
+
+export function isTeamManager(teamId: number, discordUserId: string): boolean {
+  return stmtIsTeamManager.get(teamId, discordUserId) !== undefined;
+}
+
+const stmtGetTeamManagers = db.prepare<[number], { discord_user_id: string }>(
+  `SELECT discord_user_id FROM team_managers WHERE team_id = ? ORDER BY discord_user_id`,
+);
+
+export function getTeamManagers(teamId: number): string[] {
+  return (stmtGetTeamManagers.all(teamId) as { discord_user_id: string }[]).map((row) => row.discord_user_id);
+}
+
+const stmtUpsertTeamMember = db.prepare<[number, string, string, TeamRole, string | null, number, number]>(
+  `INSERT INTO team_members
+     (team_id, discord_user_id, display_name, team_role, speciality, created_at, updated_at)
+   VALUES (?, ?, ?, ?, ?, ?, ?)
+   ON CONFLICT (team_id, discord_user_id) DO UPDATE SET
+     display_name = excluded.display_name,
+     team_role = excluded.team_role,
+     speciality = excluded.speciality,
+     updated_at = excluded.updated_at`,
+);
+
+export function upsertTeamMember(
+  teamId: number,
+  discordUserId: string,
+  displayName: string,
+  teamRole: TeamRole,
+  speciality: string | null,
+): void {
+  const now = Math.floor(Date.now() / 1000);
+  stmtUpsertTeamMember.run(teamId, discordUserId, displayName, teamRole, speciality, now, now);
+}
+
+const stmtRemoveTeamMember = db.prepare<[number, string]>(
+  `DELETE FROM team_members WHERE team_id = ? AND discord_user_id = ?`,
+);
+
+export function removeTeamMember(teamId: number, discordUserId: string): boolean {
+  return stmtRemoveTeamMember.run(teamId, discordUserId).changes === 1;
+}
+
+const stmtGetTeamMembers = db.prepare<[number], TeamMemberRow>(
+  `SELECT team_id, discord_user_id, display_name, team_role, speciality
+   FROM team_members WHERE team_id = ? ORDER BY team_role, display_name`,
+);
+
+export function getTeamMembers(teamId: number): TeamMemberRow[] {
+  return stmtGetTeamMembers.all(teamId) as TeamMemberRow[];
+}
