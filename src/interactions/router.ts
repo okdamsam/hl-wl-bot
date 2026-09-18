@@ -19,7 +19,7 @@ import { handleClaim } from './buttons/claim.js';
 import { handleDecide } from './buttons/decide.js';
 import { handleApplyModal } from './modals/apply.js';
 import { handleDecideModal } from './modals/decide.js';
-import { handleTeam } from './commands/team.js';
+import { handleTeam, handleTeamAutocomplete } from './commands/team.js';
 
 export function registerRouter(client: Client): void {
   client.on(Events.InteractionCreate, (interaction: Interaction) => {
@@ -29,6 +29,11 @@ export function registerRouter(client: Client): void {
 
 async function dispatch(interaction: Interaction): Promise<void> {
   try {
+    if (interaction.isAutocomplete()) {
+      if (interaction.commandName === 'team') await handleTeamAutocomplete(interaction);
+      return;
+    }
+
     if (interaction.isChatInputCommand()) {
       switch (interaction.commandName) {
         case 'wl-setup':

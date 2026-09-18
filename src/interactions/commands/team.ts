@@ -3,6 +3,7 @@ import {
   PermissionFlagsBits,
   MessageFlags,
   type ChatInputCommandInteraction,
+  type AutocompleteInteraction,
 } from 'discord.js';
 import {
   archiveTeam,
@@ -16,6 +17,7 @@ import {
   removeTeamMember,
   setTeamManager,
   upsertTeamMember,
+  updateTeamMemberRole,
   type TeamRole,
 } from '../../db/queries.js';
 
@@ -36,31 +38,35 @@ export const teamCommand = new SlashCommandBuilder()
   )
   .addSubcommand((sub) =>
     sub.setName('archive').setDescription('Archive a team')
-      .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true)),
+      .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true)),
   )
   .addSubcommandGroup((group) =>
     group.setName('manager').setDescription('Manage team managers')
       .addSubcommand((sub) => sub.setName('set').setDescription('Assign a team manager')
-        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true))
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))
         .addUserOption((opt) => opt.setName('member').setDescription('Manager').setRequired(true)))
       .addSubcommand((sub) => sub.setName('remove').setDescription('Remove a team manager')
-        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true))
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))
         .addUserOption((opt) => opt.setName('member').setDescription('Manager').setRequired(true)))
       .addSubcommand((sub) => sub.setName('list').setDescription('List team managers')
-        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true))),
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))),
   )
   .addSubcommandGroup((group) =>
     group.setName('member').setDescription('Manage team members')
       .addSubcommand((sub) => sub.setName('add').setDescription('Add or update a team member')
-        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true))
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))
         .addUserOption((opt) => opt.setName('member').setDescription('Discord member').setRequired(true))
         .addStringOption((opt) => opt.setName('role').setDescription('Team position').setRequired(true).addChoices(...teamRoleChoices))
         .addStringOption((opt) => opt.setName('speciality').setDescription('Optional speciality').setRequired(false)))
       .addSubcommand((sub) => sub.setName('remove').setDescription('Remove a team member')
-        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true))
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))
         .addUserOption((opt) => opt.setName('member').setDescription('Discord member').setRequired(true)))
+      .addSubcommand((sub) => sub.setName('role').setDescription('Change a team member role')
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))
+        .addUserOption((opt) => opt.setName('member').setDescription('Discord member').setRequired(true))
+        .addStringOption((opt) => opt.setName('role').setDescription('New team position').setRequired(true).addChoices(...teamRoleChoices)))
       .addSubcommand((sub) => sub.setName('list').setDescription('List team members')
-        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true))),
+        .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))),
   );
 
 function isAdministrator(interaction: ChatInputCommandInteraction): boolean {
@@ -161,10 +167,24 @@ export async function handleTeam(interaction: ChatInputCommandInteraction): Prom
       const speciality = interaction.options.getString('speciality', false)?.trim() || null;
       upsertTeamMember(team.id, member.id, member.globalName ?? member.username, role, speciality);
       await interaction.editReply(`Added <@${member.id}> to **${team.display_name}** as **${role}**.`);
+    } else if (subcommand === 'role') {
+      const role = interaction.options.getString('role', true) as TeamRole;
+      await interaction.editReply(updateTeamMemberRole(team.id, member.id, role)
+        ? `Changed <@${member.id}> to **${role}** on **${team.display_name}**.`
+        : 'That user is not on this team.');
     } else {
       await interaction.editReply(removeTeamMember(team.id, member.id)
         ? `Removed <@${member.id}> from **${team.display_name}**.`
         : 'That user is not on this team.');
     }
   }
+}
+
+export async function handleTeamAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
+  const focused = interaction.options.getFocused().toLowerCase();
+  const choices = getActiveTeams()
+    .filter((team) => team.slug.includes(focused) || team.display_name.toLowerCase().includes(focused))
+    .slice(0, 25)
+    .map((team) => ({ name: `${team.display_name} (${team.slug})`, value: team.slug }));
+  await interaction.respond(choices);
 }
