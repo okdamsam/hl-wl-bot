@@ -497,13 +497,26 @@ export function upsertTeamMember(
   stmtUpsertTeamMember.run(teamId, discordUserId, displayName, teamRole, speciality, now, now);
 }
 
-const stmtUpdateTeamMemberRole = db.prepare<[TeamRole, number, number, string]>(
-  `UPDATE team_members SET team_role = ?, updated_at = ?
+const stmtUpdateTeamMemberRole = db.prepare<[TeamRole, number, string | null, string | null, number, string]>(
+  `UPDATE team_members SET team_role = ?, updated_at = ?,
+     speciality = CASE WHEN ? IS NULL THEN speciality ELSE ? END
    WHERE team_id = ? AND discord_user_id = ?`,
 );
 
-export function updateTeamMemberRole(teamId: number, discordUserId: string, teamRole: TeamRole): boolean {
-  return stmtUpdateTeamMemberRole.run(teamRole, Math.floor(Date.now() / 1000), teamId, discordUserId).changes === 1;
+export function updateTeamMemberRole(
+  teamId: number,
+  discordUserId: string,
+  teamRole: TeamRole,
+  speciality?: string,
+): boolean {
+  return stmtUpdateTeamMemberRole.run(
+    teamRole,
+    Math.floor(Date.now() / 1000),
+    speciality ?? null,
+    speciality ?? null,
+    teamId,
+    discordUserId,
+  ).changes === 1;
 }
 
 const stmtRemoveTeamMember = db.prepare<[number, string]>(

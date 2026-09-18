@@ -64,7 +64,8 @@ export const teamCommand = new SlashCommandBuilder()
       .addSubcommand((sub) => sub.setName('role').setDescription('Change a team member role')
         .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))
         .addUserOption((opt) => opt.setName('member').setDescription('Discord member').setRequired(true))
-        .addStringOption((opt) => opt.setName('role').setDescription('New team position').setRequired(true).addChoices(...teamRoleChoices)))
+        .addStringOption((opt) => opt.setName('role').setDescription('New team position').setRequired(true).addChoices(...teamRoleChoices))
+        .addStringOption((opt) => opt.setName('speciality').setDescription('Optional new speciality').setRequired(false)))
       .addSubcommand((sub) => sub.setName('list').setDescription('List team members')
         .addStringOption((opt) => opt.setName('team').setDescription('Team slug').setRequired(true).setAutocomplete(true))),
   );
@@ -169,8 +170,9 @@ export async function handleTeam(interaction: ChatInputCommandInteraction): Prom
       await interaction.editReply(`Added <@${member.id}> to **${team.display_name}** as **${role}**.`);
     } else if (subcommand === 'role') {
       const role = interaction.options.getString('role', true) as TeamRole;
-      await interaction.editReply(updateTeamMemberRole(team.id, member.id, role)
-        ? `Changed <@${member.id}> to **${role}** on **${team.display_name}**.`
+      const speciality = interaction.options.getString('speciality', false)?.trim();
+      await interaction.editReply(updateTeamMemberRole(team.id, member.id, role, speciality)
+        ? `Updated <@${member.id}> to **${role}**${speciality ? ` with speciality **${speciality}**` : ''} on **${team.display_name}**.`
         : 'That user is not on this team.');
     } else {
       await interaction.editReply(removeTeamMember(team.id, member.id)
