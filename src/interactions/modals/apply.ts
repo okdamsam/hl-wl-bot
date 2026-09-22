@@ -29,7 +29,7 @@ function buildQuestionsEmbed(userId: string): EmbedBuilder {
     .setDescription(
       `<@${userId}> — your application has been received.\n\n` +
       '**Answer the four questions below in this thread.** One message per question is fine, or one long post, whichever you prefer.\n\n' +
-      "Take your time. There's no clock on this, and we'd rather wait a day for a considered answer than get one in ten minutes. " +
+      "Provide quality answers, but please complete the questions in a reasonable timeframe. " +
       'A staff member will pick this up once you have answered all four. **Your application will not be reviewed until all four are answered.**',
     )
     .addFields(
