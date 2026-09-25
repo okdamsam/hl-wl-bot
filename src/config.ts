@@ -1,8 +1,8 @@
 import { configDotenv } from 'dotenv';
 
-// Loads .env into process.env for local development.
-// In production (Railway) env vars are already present; dotenv is a no-op.
-configDotenv();
+// Loads .env into process.env for local development, overriding any stale shell/user env vars.
+// In production (Railway) there is no .env file, so this is a no-op.
+configDotenv({ override: true });
 
 function requireEnv(name: string): string {
   const value = process.env[name];

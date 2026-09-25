@@ -20,6 +20,7 @@ import { handleDecide } from './buttons/decide.js';
 import { handleApplyModal } from './modals/apply.js';
 import { handleDecideModal } from './modals/decide.js';
 import { handleTeam, handleTeamAutocomplete } from './commands/team.js';
+import { handleMassrole } from './commands/massrole.js';
 
 export function registerRouter(client: Client): void {
   client.on(Events.InteractionCreate, (interaction: Interaction) => {
@@ -74,6 +75,9 @@ async function dispatch(interaction: Interaction): Promise<void> {
           break;
         case 'team':
           await handleTeam(interaction);
+          break;
+        case 'massrole':
+          await handleMassrole(interaction);
           break;
         default:
           await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });
