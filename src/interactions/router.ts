@@ -21,6 +21,8 @@ import { handleApplyModal } from './modals/apply.js';
 import { handleDecideModal } from './modals/decide.js';
 import { handleTeam, handleTeamAutocomplete } from './commands/team.js';
 import { handleMassrole } from './commands/massrole.js';
+import { handleAutoroles } from './commands/autoroles.js';
+import { handleAutoroleToggle } from './buttons/autoroles.js';
 
 export function registerRouter(client: Client): void {
   client.on(Events.InteractionCreate, (interaction: Interaction) => {
@@ -79,6 +81,9 @@ async function dispatch(interaction: Interaction): Promise<void> {
         case 'massrole':
           await handleMassrole(interaction);
           break;
+        case 'autoroles':
+          await handleAutoroles(interaction);
+          break;
         default:
           await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });
       }
@@ -96,6 +101,13 @@ async function dispatch(interaction: Interaction): Promise<void> {
           break;
         case 'decide':
           await handleDecide(interaction);
+          break;
+        case 'toggle':
+          if (decode(interaction.customId)[0] === 'autoroles') {
+            await handleAutoroleToggle(interaction);
+          } else {
+            await interaction.reply({ content: 'Unknown button.', flags: MessageFlags.Ephemeral });
+          }
           break;
         default:
           await interaction.reply({ content: 'Unknown button.', flags: MessageFlags.Ephemeral });

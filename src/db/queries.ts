@@ -1,6 +1,12 @@
 // Every SQL statement in the bot lives here. No raw SQL anywhere else.
 import { db } from './index.js';
 
+export interface AutoRoleConfig {
+  roleId: string;
+  label: string;
+  emoji?: string;
+}
+
 // ── guild_config ────────────────────────────────────────────────────────────
 
 const stmtConfigGet = db.prepare<[string], { value: string }>(
@@ -38,6 +44,27 @@ export function addRoleId(key: string, id: string): void {
 
 export function removeRoleId(key: string, id: string): void {
   setConfig(key, JSON.stringify(getRoleIds(key).filter((r) => r !== id)));
+}
+
+export function getAutoRoles(): AutoRoleConfig[] {
+  const raw = getConfig('autoroles');
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (item): item is AutoRoleConfig =>
+        typeof item === 'object' && item !== null &&
+        typeof item.roleId === 'string' && typeof item.label === 'string' &&
+        (item.emoji === undefined || typeof item.emoji === 'string'),
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function setAutoRoles(roles: AutoRoleConfig[]): void {
+  setConfig('autoroles', JSON.stringify(roles));
 }
 
 // ── applications ────────────────────────────────────────────────────────────
